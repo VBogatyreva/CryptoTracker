@@ -2,4 +2,13 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="light_bg">#07A9F6</color>
+    <color name="dark_bg">#121212</color>
+    <color name="colorForRate">#F40909</color>
+    <color name="colorForText">#FFFF</color>
+
+    <color name="positive_change">#00E676</color>
+    <color name="negative_change">#F40909</color>
+
 </resources>

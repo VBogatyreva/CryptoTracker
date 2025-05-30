@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">CryptoTracker</string>
+    <string name="market_cap">Market Cap</string>
+    <string name="volume_24h">Volume (24h)</string>
+    <string name="circulating_supply">Circulating Supply</string>
+    <string name="max_supply">Max Supply</string>
 </resources>
