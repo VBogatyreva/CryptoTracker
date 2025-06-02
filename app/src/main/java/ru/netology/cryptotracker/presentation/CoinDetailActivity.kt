@@ -1,51 +1,91 @@
 package ru.netology.cryptotracker.presentation
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
-import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import ru.netology.cryptotracker.R
+import ru.netology.cryptotracker.databinding.ActivityCoinDetailBinding
+import ru.netology.cryptotracker.domain.CoinInfo
 
 class CoinDetailActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityCoinDetailBinding
+    private val viewModel: CoinDetailViewModel by viewModels()
+    private var coinId: String = ""
+
+    companion object {
+        private const val EXTRA_COIN_ID = "coin_id"
+
+        fun newIntent(context: Context, coinId: String): Intent {
+            return Intent(context, CoinDetailActivity::class.java).apply {
+                putExtra(EXTRA_COIN_ID, coinId)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_coin_detail)
+        binding = ActivityCoinDetailBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val id = intent.getStringExtra("COIN_ID") ?: ""
-        val rank = intent.getIntExtra("COIN_RANK", 0)
-        val symbol = intent.getStringExtra("COIN_SYMBOL") ?: ""
-        val name = intent.getStringExtra("COIN_NAME") ?: ""
-        val price = intent.getDoubleExtra("COIN_PRICE", 0.0)
-        val priceChangeAmount = intent.getDoubleExtra("COIN_PRICE_CHANGE_AMOUNT", 0.0)
-        val priceChangePercent = intent.getDoubleExtra("COIN_PRICE_CHANGE_PERCENT", 0.0)
-        val marketCap = intent.getDoubleExtra("COIN_MARKET_CAP", 0.0)
-        val volume = intent.getDoubleExtra("COIN_VOLUME", 0.0)
-        val circulatingSupply = intent.getDoubleExtra("COIN_CIRCULATING_SUPPLY", 0.0)
-        val maxSupply = intent.getDoubleExtra("COIN_MAX_SUPPLY", 0.0)
+        coinId = intent.getStringExtra(EXTRA_COIN_ID) ?: ""
+        if (coinId.isEmpty()) finish()
 
-        findViewById<TextView>(R.id.rank).text = rank.toString()
-        findViewById<TextView>(R.id.tvName).text = name
-        findViewById<TextView>(R.id.symbol).text = symbol
-        findViewById<TextView>(R.id.price).text = price.toString()
+        setupObservers()
+        viewModel.loadCoinDetails(coinId)
 
-        val priceChangeText = String.format("%.2f%%", priceChangePercent)
-        findViewById<TextView>(R.id.price_change).text = priceChangeText
+    }
 
-        val priceChangeColor = if (priceChangePercent >= 0) {
-            ContextCompat.getColor(this, R.color.positive_change)
-        } else {
-            ContextCompat.getColor(this, R.color.negative_change)
+    private fun setupObservers() {
+        lifecycleScope.launch {
+            viewModel.coinDetails.collectLatest { coin ->
+                coin?.let { updateUI(it) }
+            }
         }
-        findViewById<TextView>(R.id.price_change).setTextColor(priceChangeColor)
 
-        findViewById<TextView>(R.id.tvMarketCap).text = marketCap.toString()
-        findViewById<TextView>(R.id.tvVolume).text = volume.toString()
+        lifecycleScope.launch {
+            viewModel.error.collectLatest { error ->
+                error?.let { showError(it) }
+            }
+        }
+    }
 
-        findViewById<TextView>(R.id.tvCirculatingSupply).text =
-            "$circulatingSupply $symbol"
+    private fun updateUI(coin: CoinInfo) {
+        binding.apply {
+            rank.text = coin.rank.toString()
+            tvName.text = coin.name
+            symbol.text = coin.symbol
+            price.text = "${"%.2f".format(coin.priceUsd)}"
 
-        findViewById<TextView>(R.id.tvMaxSupply).text =
-            if (maxSupply > 0) "$maxSupply $symbol" else "N/A"
+            val changeText = "${"%.2f".format(coin.priceChangePercentage24h)}%"
+            priceChange.text = changeText
+            priceChange.setTextColor(
+                if (coin.priceChangePercentage24h >= 0) getColor(R.color.positive_change)
+                else getColor(R.color.negative_change)
+            )
+
+            tvMarketCap.text = coin.marketCapUsd?.let { "${"%.2f".format(it)}" } ?: "N/A"
+            tvVolume.text = coin.volumeUsd24h?.let { "${"%.2f".format(it)}" } ?: "N/A"
+            tvCirculatingSupply.text = coin.circulatingSupply?.let {
+                "${"%.2f".format(it)} ${coin.symbol}"
+            } ?: "N/A"
+            tvMaxSupply.text = coin.maxSupply?.let {"${"%.2f".format(it)} ${coin.symbol}"} ?: "N/A"
+        }
+    }
+
+    private fun showError(message: String) {
+        Snackbar.make(
+            binding.root,
+            message,
+            Snackbar.LENGTH_INDEFINITE
+        )
+            .setAction("Повторить") { viewModel.loadCoinDetails(coinId) }
+            .show()
     }
 }

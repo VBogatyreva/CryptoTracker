@@ -1,49 +1,72 @@
 package ru.netology.cryptotracker.presentation
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import ru.netology.cryptotracker.R
-import ru.netology.cryptotracker.domain.CoinInfo
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import ru.netology.cryptotracker.databinding.ActivityCoinPriceListBinding
 
 class CoinPriceListActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityCoinPriceListBinding
+    private val viewModel: CoinListViewModel by viewModels()
+    private lateinit var adapter: CoinAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_coin_price_list)
+        binding = ActivityCoinPriceListBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val recyclerView = findViewById<RecyclerView>(R.id.rvCoinPriceList)
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        setupRecyclerView()
+        observeViewModel()
+        setupAutoRefresh()
 
-        val coins = listOf(
-            CoinInfo(
-                id = "bitcoin",
-                rank = 1,
-                symbol = "BTC",
-                name = "Bitcoin",
-                priceUsd = 50000.0,
-                priceChange24h = 1500.0,
-                priceChangePercentage24h = 3.2,
-                marketCapUsd = 1_000_000_000_000.0,
-                volumeUsd24h = 50_000_000_000.0,
-                circulatingSupply = 19_000_000.0,
-                maxSupply = 21_000_000.0
-            ),
-            CoinInfo(
-                id = "ethereum",
-                rank = 2,
-                symbol = "ETH",
-                name = "Ethereum",
-                priceUsd = 3000.0,
-                priceChange24h = -75.0,
-                priceChangePercentage24h = -2.5,
-                marketCapUsd = 350_000_000_000.0,
-                volumeUsd24h = 25_000_000_000.0,
-                circulatingSupply = 120_000_000.0,
-                maxSupply = null
-            )
+        viewModel.loadCoinList()
+
+    }
+    private fun setupRecyclerView() {
+        adapter = CoinAdapter(emptyList()) { coin ->
+            startActivity(CoinDetailActivity.newIntent(this, coin.id))
+        }
+        binding.rvCoinPriceList.layoutManager = LinearLayoutManager(this)
+        binding.rvCoinPriceList.adapter = adapter
+    }
+
+    private fun observeViewModel() {
+        lifecycleScope.launch {
+            viewModel.coinList.collectLatest { coins ->
+                adapter.updateList(coins)
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.error.collectLatest { error ->
+                error?.let { showError(it) }
+            }
+        }
+    }
+
+    private fun setupAutoRefresh() {
+        lifecycleScope.launch {
+            while (true) {
+                viewModel.loadCoinList()
+                delay(10000)
+            }
+        }
+    }
+
+    private fun showError(message: String) {
+        Snackbar.make(
+            binding.root,
+            message,
+            Snackbar.LENGTH_LONG
         )
-        recyclerView.adapter = CoinAdapter(coins)
+            .setAction("Повторить") { viewModel.loadCoinList() }
+            .show()
     }
 }

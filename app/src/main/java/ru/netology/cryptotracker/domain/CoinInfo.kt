@@ -19,12 +19,3 @@ data class CoinInfo(
     val maxSupply: Double?,         // Максимальное возможное количество
 
 )
-
-
-
-
-
-
-
-
-
