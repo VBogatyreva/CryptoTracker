@@ -9,8 +9,8 @@ data class CoinInfo(
 
     // Ценовые данные
     val priceUsd: Double,          // Текущая цена в USD
-    val priceChange24h: Double,     // Изменение цены за 24ч ($)
-    val priceChangePercentage24h: Double, // Изменение цены за 24ч (%)
+    val priceChange24h: Double?,     // Изменение цены за 24ч ($)
+    val priceChangePercentage24h: Double?, // Изменение цены за 24ч (%)
 
     // Рыночные метрики
     val marketCapUsd: Double?,      // Рыночная капитализация

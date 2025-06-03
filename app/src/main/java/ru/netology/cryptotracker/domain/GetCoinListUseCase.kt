@@ -1,8 +1,10 @@
 package ru.netology.cryptotracker.domain
 
+import kotlinx.coroutines.flow.Flow
+
 class GetCoinListUseCase (private val repository: CoinRepository) {
 
-    suspend fun getCoinList(): List<CoinInfo> {
+    fun getCoinList(): Flow<List<CoinInfo>> {
         return repository.getCoinList()
     }
 }

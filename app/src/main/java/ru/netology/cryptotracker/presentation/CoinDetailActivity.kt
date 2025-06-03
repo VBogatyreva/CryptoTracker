@@ -63,10 +63,11 @@ class CoinDetailActivity : AppCompatActivity() {
             symbol.text = coin.symbol
             price.text = "${"%.2f".format(coin.priceUsd)}"
 
-            val changeText = "${"%.2f".format(coin.priceChangePercentage24h)}%"
+            val changePercentage = coin.priceChangePercentage24h ?: 0.0
+            val changeText = "${"%.2f".format(changePercentage)}%"
             priceChange.text = changeText
             priceChange.setTextColor(
-                if (coin.priceChangePercentage24h >= 0) getColor(R.color.positive_change)
+                if (changePercentage >= 0) getColor(R.color.positive_change)
                 else getColor(R.color.negative_change)
             )
 

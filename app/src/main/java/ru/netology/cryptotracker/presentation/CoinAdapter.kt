@@ -50,10 +50,11 @@ class CoinAdapter(
             symbol.text = coin.symbol
             price.text = "%.2f".format(coin.priceUsd)
 
-            val changeText = "%.2f%%".format(coin.priceChangePercentage24h)
+            val changePercentage = coin.priceChangePercentage24h ?: 0.0
+            val changeText = "%.2f%%".format(changePercentage)
             priceChange.text = changeText
 
-            val colorRes = if (coin.priceChangePercentage24h >= 0) {
+            val colorRes = if (changePercentage >= 0) {
                 R.color.positive_change
             } else {
                 R.color.negative_change
