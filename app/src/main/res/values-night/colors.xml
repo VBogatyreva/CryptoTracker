@@ -4,13 +4,12 @@
     <color name="white">#FFFFFFFF</color>
     <color name="grey">#B2B4B6</color>
 
-    <color name="light_bg">#40C4FF </color>
+    <color name="light_bg">#0091EA</color>
     <color name="actionBar_bg">#2287B6</color>
     <color name="dark_bg">#FF000000</color>
-    <color name="colorForRate">#C2185B</color>
+    <color name="colorForRate">#E91E63</color>
     <color name="colorForText">#FFFFFFFF</color>
 
-    <color name="positive_change">#4CAF50</color>
-    <color name="negative_change">#F44336</color>
-
+    <color name="positive_change">#69F0AE</color>
+    <color name="negative_change">#FF5252</color>
 </resources>

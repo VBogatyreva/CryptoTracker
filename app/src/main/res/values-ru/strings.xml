@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CryptoTracker</string>
+    <string name="market_cap">Рыночная капитализация</string>
+    <string name="volume_24h">Объем (24ч)</string>
+    <string name="circulating_supply">Обращающиеся монеты</string>
+    <string name="max_supply">Максимальное количество</string>
+    <string name="search_cryptocurrencies">Поиск криптовалюты...</string>
+</resources>

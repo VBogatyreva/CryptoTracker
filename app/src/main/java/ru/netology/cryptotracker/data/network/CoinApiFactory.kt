@@ -8,7 +8,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object CoinApiFactory {
     private const val BASE_URL = "https://rest.coincap.io/"
-    private const val API_KEY = "58a5322e1d60ae2362c79eb06df13924a1963c3f6136dc2eb441a701dae3b3b7"
+    private const val API_KEY = "da645c6a2dd6ac36f44ebee597086e09d91935f6acbc2e758dba14978adc1520"
 
     lateinit var applicationContext: Context
         private set

@@ -4,4 +4,5 @@
     <string name="volume_24h">Volume (24h)</string>
     <string name="circulating_supply">Circulating Supply</string>
     <string name="max_supply">Max Supply</string>
+    <string name="search_cryptocurrencies">Search cryptocurrencies...</string>
 </resources>
