@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ru.netology.cryptotracker.data.repository.CoinRepositoryImpl
 import ru.netology.cryptotracker.domain.CoinInfo
@@ -16,15 +17,21 @@ class CoinListViewModel : ViewModel() {
     private val _coinList = MutableStateFlow<List<CoinInfo>>(emptyList())
     val coinList: StateFlow<List<CoinInfo>> = _coinList.asStateFlow()
 
+    private val _searchResults = MutableStateFlow<List<CoinInfo>>(emptyList())
+    val searchResults: StateFlow<List<CoinInfo>> = _searchResults.asStateFlow()
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _showSearchResults = MutableStateFlow(false)
+    val showSearchResults: StateFlow<Boolean> = _showSearchResults.asStateFlow()
+
     init {
         viewModelScope.launch {
-            repository.coinList.collect{ coins ->
+            repository.coinList.collectLatest{ coins ->
                 _coinList.value = coins
             }
         }
@@ -51,7 +58,8 @@ class CoinListViewModel : ViewModel() {
             _error.value = null
             try {
                 repository.searchCoins(name).collect{ coins ->
-                    _coinList.value = coins
+                    _searchResults.value = coins
+                    _showSearchResults.value = name.isNotEmpty()
                 }
             } catch (e: Exception) {
                 _error.value = e.message
@@ -59,5 +67,10 @@ class CoinListViewModel : ViewModel() {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun clearSearch() {
+        _searchResults.value = emptyList()
+        _showSearchResults.value = false
     }
 }

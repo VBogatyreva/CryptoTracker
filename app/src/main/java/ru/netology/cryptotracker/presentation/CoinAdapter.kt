@@ -26,17 +26,19 @@ class CoinAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CoinViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_coin_info, parent, false)
-        return CoinViewHolder(view)
+        return CoinViewHolder(view, onItemClick)
     }
 
     override fun onBindViewHolder(holder: CoinViewHolder, position: Int) {
         holder.bind(coins[position])
-        holder.itemView.setOnClickListener { onItemClick(coins[position]) }
     }
 
     override fun getItemCount(): Int = coins.size
 
-    inner class CoinViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class CoinViewHolder(
+        itemView: View,
+        private val onItemClick: (CoinInfo) -> Unit
+        ) : RecyclerView.ViewHolder(itemView) {
         private val logo: ImageView = itemView.findViewById(R.id.ivLogo)
         private val rank: TextView = itemView.findViewById(R.id.rank)
         private val symbol: TextView = itemView.findViewById(R.id.symbol)
@@ -61,6 +63,7 @@ class CoinAdapter(
             }
             priceChange.setTextColor(ContextCompat.getColor(itemView.context, colorRes))
 
+            itemView.setOnClickListener { onItemClick(coin) }
         }
     }
 
