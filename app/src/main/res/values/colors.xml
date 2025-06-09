@@ -9,6 +9,7 @@
     <color name="dark_bg">#FF000000</color>
     <color name="colorForRate">#C2185B</color>
     <color name="colorForText">#FFFFFFFF</color>
+    <color name="colorForFilter">#59A204</color>
 
     <color name="positive_change">#4CAF50</color>
     <color name="negative_change">#F44336</color>

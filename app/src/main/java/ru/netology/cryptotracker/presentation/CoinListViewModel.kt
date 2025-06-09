@@ -29,13 +29,37 @@ class CoinListViewModel : ViewModel() {
     private val _showSearchResults = MutableStateFlow(false)
     val showSearchResults: StateFlow<Boolean> = _showSearchResults.asStateFlow()
 
+    private val _currentFilter = MutableStateFlow<String>("all")
+    val currentFilter: StateFlow<String> = _currentFilter.asStateFlow()
+
+    private val _filteredCoinList = MutableStateFlow<List<CoinInfo>>(emptyList())
+    val filteredCoinList: StateFlow<List<CoinInfo>> = _filteredCoinList.asStateFlow()
+
     init {
         viewModelScope.launch {
             repository.coinList.collectLatest{ coins ->
                 _coinList.value = coins
+                applyFilter(_currentFilter.value)
             }
         }
         loadCoinList()
+    }
+
+    fun applyFilter(filter: String) {
+        _currentFilter.value = filter
+        applyFilterToCurrentData()
+    }
+
+    private fun applyFilterToCurrentData() {
+        val currentData = _coinList.value
+        _filteredCoinList.value = when (_currentFilter.value) {
+            "top10" -> currentData.take(10)
+            "top50" -> currentData.take(50)
+            "top100" -> currentData.take(100)
+            "gainers" -> currentData.sortedByDescending { it.priceChangePercentage24h ?: 0.0 }.take(20)
+            "losers" -> currentData.sortedBy { it.priceChangePercentage24h ?: 0.0 }.take(20)
+            else -> currentData
+        }
     }
 
     fun loadCoinList() {

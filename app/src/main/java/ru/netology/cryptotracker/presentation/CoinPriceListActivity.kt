@@ -1,5 +1,6 @@
 package ru.netology.cryptotracker.presentation
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -9,6 +10,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
@@ -16,6 +18,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import ru.netology.cryptotracker.R
 import ru.netology.cryptotracker.data.settings.LocaleHelper
 import ru.netology.cryptotracker.data.settings.SettingsManager
 import ru.netology.cryptotracker.databinding.ActivityCoinPriceListBinding
@@ -41,9 +44,55 @@ class CoinPriceListActivity : AppCompatActivity() {
         observeViewModel()
         setupAutoRefresh()
 
+        binding.filterButton.setOnClickListener {
+            showFilter()
+        }
+
         viewModel.loadCoinList()
 
     }
+
+    private fun showFilter() {
+        val filters = arrayOf(
+            getString(R.string.filter_all),
+            getString(R.string.filter_top_10),
+            getString(R.string.filter_top_50),
+            getString(R.string.filter_top_100),
+            getString(R.string.filter_gainers),
+            getString(R.string.filter_losers)
+        )
+
+        var selectedFilter = viewModel.currentFilter.value
+        val checkedItem = when (selectedFilter) {
+            "all" -> 0
+            "top10" -> 1
+            "top50" -> 2
+            "top100" -> 3
+            "gainers" -> 4
+            "losers" -> 5
+            else -> 0
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.filter_title)
+            .setSingleChoiceItems(filters, checkedItem) { _, which ->
+                selectedFilter = when (which) {
+                    0 -> "all"
+                    1 -> "top10"
+                    2 -> "top50"
+                    3 -> "top100"
+                    4 -> "gainers"
+                    5 -> "losers"
+                    else -> "all"
+                }
+            }
+            .setPositiveButton(R.string.apply) { _, _ ->
+                viewModel.applyFilter(selectedFilter)
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
     private fun setupRecyclerView() {
         adapter = CoinAdapter(emptyList()) { coin ->
             startActivity(CoinDetailActivity.newIntent(this, coin.id))
@@ -60,6 +109,9 @@ class CoinPriceListActivity : AppCompatActivity() {
         binding.settingsButton.setOnClickListener {
             startActivity(SettingsActivity.newIntent(this))
         }
+        binding.filterButton.setColorFilter(
+            ContextCompat.getColor(this, R.color.white)
+        )
 
     }
 
@@ -90,7 +142,7 @@ class CoinPriceListActivity : AppCompatActivity() {
 
     private fun observeViewModel() {
         lifecycleScope.launch {
-            viewModel.coinList.collectLatest { coins ->
+            viewModel.filteredCoinList.collectLatest { coins ->
                 adapter.updateList(coins)
             }
         }
@@ -113,13 +165,24 @@ class CoinPriceListActivity : AppCompatActivity() {
                 error?.let { showError(it) }
             }
         }
+
+        lifecycleScope.launch {
+            viewModel.currentFilter.collect { filter ->
+                val color = if (filter != "all") {
+                    ContextCompat.getColor(this@CoinPriceListActivity, R.color.colorForFilter)
+                } else {
+                    ContextCompat.getColor(this@CoinPriceListActivity, R.color.white)
+                }
+                binding.filterButton.setColorFilter(color)
+            }
+        }
     }
 
     private fun setupAutoRefresh() {
         lifecycleScope.launch {
             while (true) {
                 delay(10000)
-                if (!viewModel.showSearchResults.value) {
+                if (!viewModel.showSearchResults.value && viewModel.currentFilter.value == "all")  {
                     viewModel.loadCoinList()
                 }
             }
@@ -132,7 +195,7 @@ class CoinPriceListActivity : AppCompatActivity() {
             message,
             Snackbar.LENGTH_LONG
         )
-            .setAction("Повторить") { viewModel.loadCoinList() }
+            .setAction(R.string.retry) { viewModel.loadCoinList() }
             .show()
     }
 

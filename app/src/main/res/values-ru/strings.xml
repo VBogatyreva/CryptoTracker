@@ -13,4 +13,14 @@
     <string name="english">Английский</string>
     <string name="russian">Русский</string>
     <string name="save">СОХРАНИТЬ</string>
+    <string name="filter_title">Фильтр монет</string>
+    <string name="filter_all">Все монеты</string>
+    <string name="filter_top_10">Топ 10</string>
+    <string name="filter_top_50">Топ 50</string>
+    <string name="filter_top_100">Топ 100</string>
+    <string name="filter_gainers">Топ роста</string>
+    <string name="filter_losers">Топ падения</string>
+    <string name="apply">Применить</string>
+    <string name="cancel">Отмена</string>
+    <string name="retry">Повторить</string>
 </resources>
