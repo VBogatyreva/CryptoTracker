@@ -1,5 +1,7 @@
 package ru.netology.cryptotracker.presentation
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -14,6 +16,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import ru.netology.cryptotracker.data.settings.LocaleHelper
+import ru.netology.cryptotracker.data.settings.SettingsManager
 import ru.netology.cryptotracker.databinding.ActivityCoinPriceListBinding
 
 class CoinPriceListActivity : AppCompatActivity() {
@@ -23,12 +27,14 @@ class CoinPriceListActivity : AppCompatActivity() {
     private lateinit var adapter: CoinAdapter
     private lateinit var searchAdapter: CoinAdapter
     private var searchJob: Job? = null
+    private lateinit var settingsManager: SettingsManager
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCoinPriceListBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        settingsManager = SettingsManager(this)
 
         setupRecyclerView()
         setupSearchView()
@@ -50,6 +56,10 @@ class CoinPriceListActivity : AppCompatActivity() {
         }
         binding.rvSearchResults.layoutManager = LinearLayoutManager(this)
         binding.rvSearchResults.adapter = searchAdapter
+
+        binding.settingsButton.setOnClickListener {
+            startActivity(SettingsActivity.newIntent(this))
+        }
 
     }
 
@@ -126,6 +136,11 @@ class CoinPriceListActivity : AppCompatActivity() {
             .show()
     }
 
+    override fun attachBaseContext(newBase: Context) {
+        val settingsManager = SettingsManager(newBase)
+        super.attachBaseContext(LocaleHelper.setLocale(newBase, settingsManager.currentLanguage))
+    }
+
     private fun showKeyboard() {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(binding.searchEditText, InputMethodManager.SHOW_IMPLICIT)
@@ -134,5 +149,11 @@ class CoinPriceListActivity : AppCompatActivity() {
     private fun hideKeyboard() {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(binding.searchEditText.windowToken, 0)
+    }
+
+    companion object {
+        fun newIntent(context: Context): Intent {
+            return Intent(context, CoinPriceListActivity::class.java)
+        }
     }
 }

@@ -1,7 +1,10 @@
 package ru.netology.cryptotracker
 
 import android.app.Application
+import android.content.Context
 import ru.netology.cryptotracker.data.network.CoinApiFactory
+import ru.netology.cryptotracker.data.settings.LocaleHelper
+import ru.netology.cryptotracker.data.settings.SettingsManager
 
 class App : Application() {
     companion object {
@@ -13,5 +16,12 @@ class App : Application() {
         super.onCreate()
         instance = this
         CoinApiFactory.init(this)
+
+        SettingsManager(this).setupInitialTheme()
+    }
+
+    override fun attachBaseContext(base: Context) {
+        val settingsManager = SettingsManager(base)
+        super.attachBaseContext(LocaleHelper.setLocale(base, settingsManager.currentLanguage))
     }
 }

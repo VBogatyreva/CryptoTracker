@@ -5,4 +5,11 @@
     <string name="circulating_supply">Circulating Supply</string>
     <string name="max_supply">Max Supply</string>
     <string name="search_cryptocurrencies">Search cryptocurrencies...</string>
+    <string name="theme">Theme:</string>
+    <string name="light_theme">Light</string>
+    <string name="dark_theme">Dark</string>
+    <string name="language">Language:</string>
+    <string name="english">English</string>
+    <string name="russian">Russian</string>
+    <string name="save">SAVE</string>
 </resources>

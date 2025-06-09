@@ -6,4 +6,11 @@
     <string name="circulating_supply">Обращающиеся монеты</string>
     <string name="max_supply">Максимальное количество</string>
     <string name="search_cryptocurrencies">Поиск криптовалюты...</string>
+    <string name="theme">Тема:</string>
+    <string name="light_theme">Светлая</string>
+    <string name="dark_theme">Темная</string>
+    <string name="language">Язык:</string>
+    <string name="english">Английский</string>
+    <string name="russian">Русский</string>
+    <string name="save">СОХРАНИТЬ</string>
 </resources>
