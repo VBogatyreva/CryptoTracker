@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/coinPriceListFragment">
+
+    <fragment
+        android:id="@+id/coinPriceListFragment"
+        android:name="ru.netology.cryptotracker.presentation.CoinPriceListFragment"
+        android:label="CryptoTracker"
+        tools:layout="@layout/fragment_coin_price_list">
+
+        <action
+            android:id="@+id/action_coinPriceListFragment_to_coinDetailFragment"
+            app:destination="@id/coinDetailFragment" />
+
+        <action
+            android:id="@+id/action_coinPriceListFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/coinDetailFragment"
+        android:name="ru.netology.cryptotracker.presentation.CoinDetailFragment"
+        android:label="Coin Details"
+        tools:layout="@layout/fragment_coin_detail">
+        <argument
+            android:name="coin_id"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="ru.netology.cryptotracker.presentation.SettingsFragment"
+        android:label="Settings"
+        tools:layout="@layout/fragment_settings" />
+</navigation>

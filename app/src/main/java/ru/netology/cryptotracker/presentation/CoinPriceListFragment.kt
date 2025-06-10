@@ -1,17 +1,20 @@
 package ru.netology.cryptotracker.presentation
 
 import android.app.AlertDialog
-import android.content.Context
-import android.content.Intent
+import android.content.Context.INPUT_METHOD_SERVICE
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
@@ -19,25 +22,33 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ru.netology.cryptotracker.R
-import ru.netology.cryptotracker.data.settings.LocaleHelper
 import ru.netology.cryptotracker.data.settings.SettingsManager
-import ru.netology.cryptotracker.databinding.ActivityCoinPriceListBinding
+import ru.netology.cryptotracker.databinding.FragmentCoinPriceListBinding
 
-class CoinPriceListActivity : AppCompatActivity() {
+class CoinPriceListFragment : Fragment() {
 
-    private lateinit var binding: ActivityCoinPriceListBinding
+    private var _binding: FragmentCoinPriceListBinding? = null
+    private val binding: FragmentCoinPriceListBinding
+        get() =_binding ?: throw RuntimeException("FragmentCoinPriceListBinding is null")
+
     private val viewModel: CoinListViewModel by viewModels()
     private lateinit var adapter: CoinAdapter
     private lateinit var searchAdapter: CoinAdapter
     private var searchJob: Job? = null
     private lateinit var settingsManager: SettingsManager
 
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentCoinPriceListBinding.inflate(inflater, container, false)
+        settingsManager = SettingsManager(requireContext())
+        return binding.root
+    }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityCoinPriceListBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        settingsManager = SettingsManager(this)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
         setupSearchView()
@@ -49,7 +60,6 @@ class CoinPriceListActivity : AppCompatActivity() {
         }
 
         viewModel.loadCoinList()
-
     }
 
     private fun showFilter() {
@@ -73,7 +83,7 @@ class CoinPriceListActivity : AppCompatActivity() {
             else -> 0
         }
 
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(requireContext())
             .setTitle(R.string.filter_title)
             .setSingleChoiceItems(filters, checkedItem) { _, which ->
                 selectedFilter = when (which) {
@@ -95,22 +105,28 @@ class CoinPriceListActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         adapter = CoinAdapter(emptyList()) { coin ->
-            startActivity(CoinDetailActivity.newIntent(this, coin.id))
+            findNavController().navigate(
+                R.id.action_coinPriceListFragment_to_coinDetailFragment,
+                bundleOf("coin_id" to coin.id)
+            )
         }
-        binding.rvCoinPriceList.layoutManager = LinearLayoutManager(this)
+        binding.rvCoinPriceList.layoutManager = LinearLayoutManager(requireContext())
         binding.rvCoinPriceList.adapter = adapter
 
         searchAdapter = CoinAdapter(emptyList()) { coin ->
-            startActivity(CoinDetailActivity.newIntent(this, coin.id))
+            findNavController().navigate(
+                R.id.action_coinPriceListFragment_to_coinDetailFragment,
+                bundleOf("coin_id" to coin.id)
+            )
         }
-        binding.rvSearchResults.layoutManager = LinearLayoutManager(this)
+        binding.rvSearchResults.layoutManager = LinearLayoutManager(requireContext())
         binding.rvSearchResults.adapter = searchAdapter
 
         binding.settingsButton.setOnClickListener {
-            startActivity(SettingsActivity.newIntent(this))
+            findNavController().navigate(R.id.action_coinPriceListFragment_to_settingsFragment)
         }
         binding.filterButton.setColorFilter(
-            ContextCompat.getColor(this, R.color.white)
+            ContextCompat.getColor(requireContext(), R.color.white)
         )
 
     }
@@ -169,9 +185,9 @@ class CoinPriceListActivity : AppCompatActivity() {
         lifecycleScope.launch {
             viewModel.currentFilter.collect { filter ->
                 val color = if (filter != "all") {
-                    ContextCompat.getColor(this@CoinPriceListActivity, R.color.colorForFilter)
+                    ContextCompat.getColor(requireContext(), R.color.colorForFilter)
                 } else {
-                    ContextCompat.getColor(this@CoinPriceListActivity, R.color.white)
+                    ContextCompat.getColor(requireContext(), R.color.white)
                 }
                 binding.filterButton.setColorFilter(color)
             }
@@ -199,24 +215,18 @@ class CoinPriceListActivity : AppCompatActivity() {
             .show()
     }
 
-    override fun attachBaseContext(newBase: Context) {
-        val settingsManager = SettingsManager(newBase)
-        super.attachBaseContext(LocaleHelper.setLocale(newBase, settingsManager.currentLanguage))
-    }
-
     private fun showKeyboard() {
-        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        val imm = requireContext().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(binding.searchEditText, InputMethodManager.SHOW_IMPLICIT)
     }
 
     private fun hideKeyboard() {
-        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        val imm = requireContext().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(binding.searchEditText.windowToken, 0)
     }
 
-    companion object {
-        fun newIntent(context: Context): Intent {
-            return Intent(context, CoinPriceListActivity::class.java)
-        }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

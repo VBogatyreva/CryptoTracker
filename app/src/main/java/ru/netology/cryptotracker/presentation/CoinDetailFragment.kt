@@ -1,45 +1,51 @@
 package ru.netology.cryptotracker.presentation
 
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ru.netology.cryptotracker.R
-import ru.netology.cryptotracker.databinding.ActivityCoinDetailBinding
+import ru.netology.cryptotracker.databinding.FragmentCoinDetailBinding
 import ru.netology.cryptotracker.domain.CoinInfo
 
-class CoinDetailActivity : AppCompatActivity() {
+class CoinDetailFragment : Fragment() {
 
-    private lateinit var binding: ActivityCoinDetailBinding
+    private var _binding: FragmentCoinDetailBinding? = null
+    private val binding: FragmentCoinDetailBinding
+        get() =_binding ?: throw RuntimeException("FragmentCoinDetailBinding is null")
+
     private val viewModel: CoinDetailViewModel by viewModels()
     private var coinId: String = ""
 
-    companion object {
-        private const val EXTRA_COIN_ID = "coin_id"
-
-        fun newIntent(context: Context, coinId: String): Intent {
-            return Intent(context, CoinDetailActivity::class.java).apply {
-                putExtra(EXTRA_COIN_ID, coinId)
-            }
-        }
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentCoinDetailBinding.inflate(
+            inflater, container, false
+        )
+        return binding.root
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityCoinDetailBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        coinId = intent.getStringExtra(EXTRA_COIN_ID) ?: ""
-        if (coinId.isEmpty()) finish()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        coinId = arguments?.getString("coin_id") ?: ""
+        if (coinId.isEmpty()) {
+            findNavController().popBackStack()
+            return
+        }
 
         setupObservers()
         viewModel.loadCoinDetails(coinId)
-
     }
 
     private fun setupObservers() {
@@ -67,8 +73,8 @@ class CoinDetailActivity : AppCompatActivity() {
             val changeText = "${"%.2f".format(changePercentage)}%"
             priceChange.text = changeText
             priceChange.setTextColor(
-                if (changePercentage >= 0) getColor(R.color.positive_change)
-                else getColor(R.color.negative_change)
+                if (changePercentage >= 0) ContextCompat.getColor(requireContext(),R.color.positive_change)
+                else ContextCompat.getColor(requireContext(),R.color.negative_change)
             )
 
             tvMarketCap.text = coin.marketCapUsd?.let { "${"%.2f".format(it)}" } ?: "N/A"
@@ -88,5 +94,10 @@ class CoinDetailActivity : AppCompatActivity() {
         )
             .setAction("Повторить") { viewModel.loadCoinDetails(coinId) }
             .show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
