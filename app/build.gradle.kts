@@ -63,8 +63,6 @@ dependencies {
 
     // Тестирование
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     // Kotlin & Coroutines
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.22")
@@ -80,9 +78,10 @@ dependencies {
     // Dagger Hilt
     implementation("com.google.dagger:hilt-android:2.48.1")
     kapt("com.google.dagger:hilt-android-compiler:2.48.1")
-    implementation("androidx.hilt:hilt-navigation-fragment:1.1.0")
-    implementation("androidx.hilt:hilt-work:1.1.0")
-    kapt("androidx.hilt:hilt-compiler:1.1.0")
+    kaptTest ("com.google.dagger:hilt-android-compiler:2.48.1")
+    implementation("androidx.hilt:hilt-navigation-fragment:1.2.0")
+    implementation("androidx.hilt:hilt-work:1.2.0")
+    kapt("androidx.hilt:hilt-compiler:1.2.0")
 
 
     // AndroidX Lifecycle
@@ -105,8 +104,6 @@ dependencies {
 
     // WorkManager (для фоновых задач)
     implementation("androidx.work:work-runtime-ktx:2.9.0")
-    implementation("androidx.hilt:hilt-work:1.2.0")
-    kapt("androidx.hilt:hilt-compiler:1.2.0")
 
     // Glide
     implementation ("com.github.bumptech.glide:glide:4.16.0")
