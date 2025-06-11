@@ -10,12 +10,14 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ru.netology.cryptotracker.R
 import ru.netology.cryptotracker.databinding.FragmentCoinDetailBinding
 import ru.netology.cryptotracker.domain.CoinInfo
 
+@AndroidEntryPoint
 class CoinDetailFragment : Fragment() {
 
     private var _binding: FragmentCoinDetailBinding? = null

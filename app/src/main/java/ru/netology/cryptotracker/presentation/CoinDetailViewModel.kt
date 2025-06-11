@@ -2,16 +2,19 @@ package ru.netology.cryptotracker.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import ru.netology.cryptotracker.data.repository.CoinRepositoryImpl
 import ru.netology.cryptotracker.domain.CoinInfo
+import ru.netology.cryptotracker.domain.CoinRepository
+import javax.inject.Inject
 
-class CoinDetailViewModel : ViewModel() {
-
-    private val repository = CoinRepositoryImpl
+@HiltViewModel
+class CoinDetailViewModel @Inject constructor(
+    private val repository: CoinRepository
+)  : ViewModel() {
 
     private val _coinDetails = MutableStateFlow<CoinInfo?>(null)
     val coinDetails: StateFlow<CoinInfo?> = _coinDetails.asStateFlow()

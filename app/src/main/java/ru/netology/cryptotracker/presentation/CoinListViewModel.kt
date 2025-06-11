@@ -2,17 +2,20 @@ package ru.netology.cryptotracker.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import ru.netology.cryptotracker.data.repository.CoinRepositoryImpl
 import ru.netology.cryptotracker.domain.CoinInfo
+import ru.netology.cryptotracker.domain.CoinRepository
+import javax.inject.Inject
 
-class CoinListViewModel : ViewModel() {
-
-    private val repository = CoinRepositoryImpl
+@HiltViewModel
+class CoinListViewModel @Inject constructor(
+    private val repository: CoinRepository
+)  : ViewModel() {
 
     private val _coinList = MutableStateFlow<List<CoinInfo>>(emptyList())
     val coinList: StateFlow<List<CoinInfo>> = _coinList.asStateFlow()
@@ -37,7 +40,7 @@ class CoinListViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            repository.coinList.collectLatest{ coins ->
+            repository.getCoinList().collectLatest{ coins ->
                 _coinList.value = coins
                 applyFilter(_currentFilter.value)
             }

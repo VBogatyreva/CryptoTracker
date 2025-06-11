@@ -7,11 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.cryptotracker.R
 import ru.netology.cryptotracker.data.settings.SettingsManager
 import ru.netology.cryptotracker.databinding.FragmentSettingsBinding
 import java.util.Locale
 
+@AndroidEntryPoint
 class SettingsFragment : Fragment() {
 
     private var _binding: FragmentSettingsBinding? = null

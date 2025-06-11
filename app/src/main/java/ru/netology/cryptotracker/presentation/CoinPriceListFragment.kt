@@ -17,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -25,6 +26,7 @@ import ru.netology.cryptotracker.R
 import ru.netology.cryptotracker.data.settings.SettingsManager
 import ru.netology.cryptotracker.databinding.FragmentCoinPriceListBinding
 
+@AndroidEntryPoint
 class CoinPriceListFragment : Fragment() {
 
     private var _binding: FragmentCoinPriceListBinding? = null

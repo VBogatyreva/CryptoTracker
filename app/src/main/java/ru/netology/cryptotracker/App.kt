@@ -2,11 +2,12 @@ package ru.netology.cryptotracker
 
 import android.app.Application
 import android.content.Context
-import ru.netology.cryptotracker.data.network.CoinApiFactory
+import dagger.hilt.android.HiltAndroidApp
 import ru.netology.cryptotracker.data.settings.LocaleHelper
 import ru.netology.cryptotracker.data.settings.SettingsManager
 import java.util.Locale
 
+@HiltAndroidApp
 class App : Application() {
     companion object {
         lateinit var instance: App
@@ -16,7 +17,6 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        CoinApiFactory.init(this)
 
         SettingsManager(this).setupInitialTheme()
     }

@@ -9,22 +9,25 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import ru.netology.cryptotracker.data.database.AppDatabase
+import ru.netology.cryptotracker.data.database.CoinInfoDao
 import ru.netology.cryptotracker.data.database.CoinInfoDbModel
 import ru.netology.cryptotracker.data.mapper.CoinInfoMapper
-import ru.netology.cryptotracker.data.network.CoinApiFactory
+import ru.netology.cryptotracker.data.network.CoinApiService
 import ru.netology.cryptotracker.domain.CoinInfo
 import ru.netology.cryptotracker.domain.CoinRepository
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import javax.inject.Singleton
 
-object CoinRepositoryImpl : CoinRepository {
-
-    private val apiService = CoinApiFactory.coinCapCoinApiService
-    private val database = AppDatabase.getInstance(CoinApiFactory.applicationContext)
-    private val mapper = CoinInfoMapper()
+@Singleton
+class CoinRepositoryImpl @Inject constructor(
+    private val coinInfoDao: CoinInfoDao,
+    private val coinApiService: CoinApiService,
+    private val coinMapper: CoinInfoMapper
+) : CoinRepository {
 
     private val _coinList = MutableStateFlow<List<CoinInfo>>(emptyList())
-    val coinList: StateFlow<List<CoinInfo>> = _coinList.asStateFlow()
+    override val coinList: StateFlow<List<CoinInfo>> = _coinList.asStateFlow()
 
     private val _coinDetails = MutableStateFlow<CoinInfo?>(null)
     private val _isLoading = MutableStateFlow(false)
@@ -37,8 +40,12 @@ object CoinRepositoryImpl : CoinRepository {
 
     init {
         scope.launch {
-            database.coinPriceInfoDao().getPriceList()
-                .map { dbModels -> dbModels.map { mapDbModelToDomain(it) } }
+            coinInfoDao.getPriceList()
+                .map { dbModels: List<CoinInfoDbModel> ->
+                    dbModels.map { dbModel ->
+                        this@CoinRepositoryImpl.mapDbModelToDomain(dbModel)
+                    }
+                }
                 .collect { coins ->
                     _coinList.value = coins
                 }
@@ -46,14 +53,18 @@ object CoinRepositoryImpl : CoinRepository {
     }
 
     override fun getCoinList(): Flow<List<CoinInfo>> {
-        return database.coinPriceInfoDao().getPriceList()
-            .map { dbModels -> dbModels.map { mapDbModelToDomain(it) } }
+        return coinInfoDao.getPriceList()
+            .map { dbModels: List<CoinInfoDbModel> ->
+                dbModels.map { dbModel: CoinInfoDbModel ->
+                    mapDbModelToDomain(dbModel)
+                }
+            }
     }
 
     override suspend fun getCoinDetail(id: String): CoinInfo {
         return try {
             refreshCoinDetail(id)
-            database.coinPriceInfoDao().getPriceInfoAboutCoin(id)?.let { dbModel ->
+            coinInfoDao.getPriceInfoAboutCoin(id)?.let { dbModel: CoinInfoDbModel ->
                 mapDbModelToDomain(dbModel)
             } ?: throw Exception("Coin details are not found")
         } catch (e: Exception) {
@@ -67,13 +78,13 @@ object CoinRepositoryImpl : CoinRepository {
 
         try {
             println("Fetching coin list from API")
-            val response = apiService.getCoinList()
+            val response = coinApiService.getCoinList()
             if (response.isSuccessful) {
                 println("Received ${response.body()?.data?.size} coins")
                 response.body()?.data?.let { coinsDto ->
-                    val dbModels = coinsDto.map { mapper.map(it) }
-                    database.coinPriceInfoDao().clearAll()
-                    database.coinPriceInfoDao().insertPriceList(dbModels)
+                    val dbModels = coinsDto.map { dto -> coinMapper.map(dto) }
+                    coinInfoDao.clearAll()
+                    coinInfoDao.insertPriceList(dbModels)
                     lastRefreshTime = System.currentTimeMillis()
                 }
             } else {
@@ -89,11 +100,11 @@ object CoinRepositoryImpl : CoinRepository {
 
     private suspend fun refreshCoinDetail(id: String) {
         try {
-            val response = apiService.getCoinDetail(id)
+            val response = coinApiService.getCoinDetail(id)
             if (response.isSuccessful) {
                 response.body()?.data?.let { coinDto ->
-                    val dbModel = mapper.map(coinDto)
-                    database.coinPriceInfoDao().insertPriceList(listOf(dbModel))
+                    val dbModel = coinMapper.map(coinDto)
+                    coinInfoDao.insertPriceList(listOf(dbModel))
                 }
             }
         } catch (e: Exception) {
@@ -102,12 +113,12 @@ object CoinRepositoryImpl : CoinRepository {
     }
 
     override fun searchCoins(name: String): Flow<List<CoinInfo>>  {
-        return database.coinPriceInfoDao().getPriceList()
-            .map { dbModels ->
-                dbModels.filter {
-                    it.name.contains(name, ignoreCase = true) ||
-                            it.symbol.contains(name, ignoreCase = true)
-                }.map { mapDbModelToDomain(it) }
+        return coinInfoDao.getPriceList()
+            .map { dbModels: List<CoinInfoDbModel> ->
+                dbModels.filter { dbModel ->
+                    dbModel.name.contains(name, ignoreCase = true) ||
+                            dbModel.symbol.contains(name, ignoreCase = true)
+                }.map { dbModel -> mapDbModelToDomain(dbModel) }
             }
     }
 
