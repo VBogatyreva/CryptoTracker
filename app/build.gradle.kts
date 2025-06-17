@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application") version "8.7.3"
     id("org.jetbrains.kotlin.android") version "1.9.22"
@@ -17,6 +19,17 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            type = "String",
+            name = "API_KEY",
+            value = "\"${getApiKey()}\""
+        )
+        buildConfigField(
+            type = "String",
+            name = "BASE_URL",
+            value = "\"http://94.228.125.136:8080/\""
+        )
     }
 
     buildTypes {
@@ -26,15 +39,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            manifestPlaceholders["usesCleartextTraffic"] = false
 
-            buildConfigField("String", "API_KEY", "\"${project.findProperty("API_KEY") ?: ""}\"")
-            buildConfigField("String", "BASE_URL", "\"http://94.228.125.136:8080/\"")
         }
 
         debug {
-
-            buildConfigField("String", "API_KEY", "\"${project.findProperty("API_KEY") ?: ""}\"")
-            buildConfigField("String", "BASE_URL", "\"http://94.228.125.136:8080/\"")
+            manifestPlaceholders["usesCleartextTraffic"] = true
         }
 
     }
@@ -51,6 +61,20 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+}
+
+fun getApiKey(): String {
+    val propertiesFile = rootProject.file("local.properties")
+    if (!propertiesFile.exists()) {
+        throw GradleException("local.properties file not found")
+    }
+
+    val properties = Properties().apply {
+        propertiesFile.inputStream().use { load(it) }
+    }
+
+    return properties.getProperty("API_KEY")
+        ?: throw GradleException("API_KEY not found in local.properties")
 }
 
 dependencies {

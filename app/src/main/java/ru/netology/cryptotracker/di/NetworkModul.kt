@@ -20,12 +20,44 @@ object NetworkModule {
     fun provideOkHttpClient(): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor { chain ->
-                val original = chain.request()
-                val request = original.newBuilder()
+//                val original = chain.request()
+//                val request = original.newBuilder()
+//                    .header("Authorization", "Bearer ${BuildConfig.API_KEY}")
+//                    .method(original.method, original.body)
+//                    .build()
+//                chain.proceed(request)
+
+                val request = chain.request()
+
+                println("╔════════ Request ════════")
+                println("║ URL: ${request.url}")
+                println("║ Method: ${request.method}")
+                request.headers.forEach { header ->
+                    println("║ Header: ${header.first}=${header.second}")
+                }
+
+                val newRequest = request.newBuilder()
                     .header("Authorization", "Bearer ${BuildConfig.API_KEY}")
-                    .method(original.method, original.body)
+                    .header("Accept", "application/json")
                     .build()
-                chain.proceed(request)
+
+                println("╠═════ Modified Request ═════")
+                newRequest.headers.forEach { header ->
+                    println("║ Added Header: ${header.first}=${header.second}")
+                }
+                println("╚═══════════════════════════")
+
+                val response = chain.proceed(newRequest)
+
+                println("╔════════ Response ════════")
+                println("║ Code: ${response.code}")
+                println("║ Message: ${response.message}")
+                response.headers.forEach { header ->
+                    println("║ Header: ${header.first}=${header.second}")
+                }
+                println("╚═══════════════════════════")
+
+                response
             }
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BASIC

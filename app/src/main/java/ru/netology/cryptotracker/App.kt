@@ -16,6 +16,8 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        println("API_KEY: ${BuildConfig.API_KEY}")
+        println("BASE_URL: ${BuildConfig.BASE_URL}")
         instance = this
 
         SettingsManager(this).setupInitialTheme()
