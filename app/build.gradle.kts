@@ -20,13 +20,14 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        val localProperties = Properties().apply {
-            load(rootProject.file("local.properties").inputStream())
-        }
-        val apiKey = localProperties.getProperty("API_KEY") ?: System.getenv("API_KEY") ?: ""
-
+        val apiKey = System.getenv("API_KEY") ?: getLocalProperty("API_KEY") ?: ""
         buildConfigField("String", "API_KEY", "\"$apiKey\"")
-        buildConfigField("String", "BASE_URL", "\"http://94.228.125.136:8080/\"")
+
+        buildConfigField(
+            "String",
+            "BASE_URL",
+            "\"http://94.228.125.136:8080/\""
+        )
     }
 
     buildTypes {
@@ -58,6 +59,14 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+}
+
+fun getLocalProperty(key: String, file: File = rootProject.file("local.properties")): String? {
+    if (!file.exists()) return null
+
+    return Properties().apply {
+        load(file.inputStream())
+    }.getProperty(key)
 }
 
 dependencies {
