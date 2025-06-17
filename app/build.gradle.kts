@@ -20,16 +20,13 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField(
-            type = "String",
-            name = "API_KEY",
-            value = "\"${getApiKey()}\""
-        )
-        buildConfigField(
-            type = "String",
-            name = "BASE_URL",
-            value = "\"http://94.228.125.136:8080/\""
-        )
+        val localProperties = Properties().apply {
+            load(rootProject.file("local.properties").inputStream())
+        }
+        val apiKey = localProperties.getProperty("API_KEY") ?: System.getenv("API_KEY") ?: ""
+
+        buildConfigField("String", "API_KEY", "\"$apiKey\"")
+        buildConfigField("String", "BASE_URL", "\"http://94.228.125.136:8080/\"")
     }
 
     buildTypes {
@@ -61,20 +58,6 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-}
-
-fun getApiKey(): String {
-    val propertiesFile = rootProject.file("local.properties")
-    if (!propertiesFile.exists()) {
-        throw GradleException("local.properties file not found")
-    }
-
-    val properties = Properties().apply {
-        propertiesFile.inputStream().use { load(it) }
-    }
-
-    return properties.getProperty("API_KEY")
-        ?: throw GradleException("API_KEY not found in local.properties")
 }
 
 dependencies {
