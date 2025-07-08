@@ -47,7 +47,12 @@ class SettingsFragment : Fragment() {
         }
 
         when (settingsManager.currentLanguage) {
-            SettingsManager.LANGUAGE_EN -> binding.languageRadioGroup.check(R.id.englishLanguage)
+            SettingsManager.LANGUAGE_EN -> {
+                binding.languageRadioGroup.check(R.id.englishLanguage)
+                if (Locale.getDefault().language != SettingsManager.LANGUAGE_EN) {
+                    updateLocale(SettingsManager.LANGUAGE_EN)
+                }
+            }
             SettingsManager.LANGUAGE_RU -> binding.languageRadioGroup.check(R.id.russianLanguage)
         }
     }
@@ -65,28 +70,28 @@ class SettingsFragment : Fragment() {
                 R.id.russianLanguage -> SettingsManager.LANGUAGE_RU
                 else -> SettingsManager.LANGUAGE_EN
             }
-            val languageChanged = settingsManager.currentLanguage != newLanguage
+
             settingsManager.currentLanguage = newLanguage
+            updateLocale(newLanguage)
 
-            if (languageChanged) {
-                val locale = Locale(newLanguage)
-                Locale.setDefault(locale)
-
-                val config = Configuration(resources.configuration)
-                config.setLocale(locale)
-
-                requireActivity().apply {
-                    createConfigurationContext(config)
-                    resources.updateConfiguration(config, resources.displayMetrics)
-
-                    findNavController().popBackStack()
-                    recreate()
-                }
-            } else {
-                findNavController().popBackStack()
-            }
+            findNavController().popBackStack()
         }
     }
+
+    private fun updateLocale(language: String) {
+        val locale = Locale(language)
+        Locale.setDefault(locale)
+
+        val config = Configuration(resources.configuration)
+        config.setLocale(locale)
+
+        requireActivity().apply {
+            createConfigurationContext(config)
+            resources.updateConfiguration(config, resources.displayMetrics)
+            recreate()
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
