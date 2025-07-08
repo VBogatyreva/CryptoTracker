@@ -26,7 +26,7 @@ android {
         buildConfigField(
             "String",
             "BASE_URL",
-            "\"http://94.228.125.136:8080/\""
+            "\"https://rest.coincap.io/\""
         )
     }
 
